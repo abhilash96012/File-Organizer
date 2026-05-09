@@ -1,0 +1,75 @@
+{
+  "files": [],
+  "categories": [
+    {
+      "_id": "86232455-338f-48ed-afcf-2e7d61f05ba0",
+      "name": "Images",
+      "extensions": [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".webp",
+        ".svg"
+      ],
+      "isDefault": true
+    },
+    {
+      "_id": "37d7e658-9ef7-4ed7-98e2-273e8e88e8e6",
+      "name": "Documents",
+      "extensions": [
+        ".pdf",
+        ".doc",
+        ".docx",
+        ".txt",
+        ".xlsx",
+        ".xls",
+        ".csv",
+        ".ppt",
+        ".pptx"
+      ],
+      "isDefault": true
+    },
+    {
+      "_id": "9724e860-de10-4d4d-86bd-70840517b36a",
+      "name": "Videos",
+      "extensions": [
+        ".mp4",
+        ".avi",
+        ".mov",
+        ".wmv",
+        ".mkv"
+      ],
+      "isDefault": true
+    },
+    {
+      "_id": "2654969b-6c9d-4e78-9aa5-6b0083158f64",
+      "name": "Duplicates",
+      "extensions": [],
+      "isDefault": true
+    }
+  ],
+  "history": [
+    {
+      "_id": "947b3269-ffbb-459c-a39c-15ad3f15455e",
+      "folderPath": "C:\\Users\\jayaa\\OneDrive\\Pictures\\Saved Pictures",
+      "lastOrganizedAt": 1778322709005,
+      "isAutoOrganizing": false
+    },
+    {
+      "_id": "11051f04-f42c-4537-9348-23a79990f0b2",
+      "folderPath": "C:\\Users\\jayaa\\OneDrive\\Documents\\phone",
+      "lastOrganizedAt": 1777413729008
+    },
+    {
+      "_id": "06c5485f-f740-4fbc-885c-c67262cc7c7c",
+      "folderPath": "C:\\xampp\\tomcat\\webapps\\all\\CE",
+      "lastOrganizedAt": 1778310365073
+    },
+    {
+      "_id": "3e324fba-3c56-4a40-8a0e-4adc1dd40d77",
+      "folderPath": "C:\\Users\\jayaa\\OneDrive\\Pictures\\Screenshots",
+      "lastOrganizedAt": 1778322002701
+    }
+  ]
+}
