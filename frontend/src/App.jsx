@@ -178,13 +178,22 @@ function App() {
 
   // Compute data for charts optimized with useMemo
   const pieData = useMemo(() => {
-    return Object.keys(groupedFiles).map(catName => ({
+    const data = Object.keys(groupedFiles).map(catName => ({
       name: catName,
       value: groupedFiles[catName].length
     })).filter(item => item.value > 0);
+    if (data.length === 0) {
+      return [{ name: 'No Files Organized', value: 1 }];
+    }
+    return data;
   }, [groupedFiles]);
 
-  const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b'];
+  const COLORS = useMemo(() => {
+    if (files.length === 0) {
+      return ['#475569']; // Slate-600 gray placeholder color
+    }
+    return ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#6366f1'];
+  }, [files]);
 
   const totalFiles = useMemo(() => processedFiles.length, [processedFiles]);
   const totalSize = useMemo(() => processedFiles.reduce((acc, file) => acc + (file.size || 0), 0), [processedFiles]);
@@ -278,14 +287,7 @@ function App() {
           <>
             <UploadForm onFileUpload={handleFileUpload} fetchFiles={fetchFiles} />
             
-            {files.length === 0 ? (
-              <div className="empty-state">
-                <p>No files found.</p>
-                <span>Upload a folder above to get started!</span>
-              </div>
-            ) : (
-              <>
-                {selectedFileIds.length > 0 && (
+            {selectedFileIds.length > 0 && (
               <div className="bulk-actions-toolbar" style={{ 
                 background: 'var(--primary)', 
                 padding: '1rem', 
@@ -314,100 +316,174 @@ function App() {
               </div>
             )}
 
-            <div className="controls-container">
-                  <div className="search-wrapper">
-                    <Search size={20} className="search-icon" />
-                    <input 
-                      type="text" 
-                      placeholder="Search files by name..." 
-                      className="search-input"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-                  <select 
-                    className="sort-select" 
-                    value={sortOrder}
-                    onChange={(e) => setSortOrder(e.target.value)}
-                  >
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
-                    <option value="largest">Largest Size</option>
-                    <option value="smallest">Smallest Size</option>
-                  </select>
+            {files.length > 0 && (
+              <div className="controls-container">
+                <div className="search-wrapper">
+                  <Search size={20} className="search-icon" />
+                  <input 
+                    type="text" 
+                    placeholder="Search files by name..." 
+                    className="search-input"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </div>
+                <select 
+                  className="sort-select" 
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value)}
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="largest">Largest Size</option>
+                  <option value="smallest">Smallest Size</option>
+                </select>
+              </div>
+            )}
 
-                {processedFiles.length === 0 ? (
-                  <div className="empty-state" style={{ padding: '2rem 0', minHeight: 'auto' }}>
-                    <p>No matching files found.</p>
-                    <span>Try a different search term.</span>
-                  </div>
-                ) : (
-                  <>
-                    <div className="dashboard-container">
-                      <div className="dashboard-card" style={{ minWidth: 0 }}>
-                        <h3>Category Distribution</h3>
-                        <div style={{ width: '100%', height: 200, position: 'relative' }}>
-                          <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                              <Pie
-                                data={pieData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={60}
-                                outerRadius={80}
-                                paddingAngle={5}
-                                dataKey="value"
-                                isAnimationActive={true}
-                              >
-                                {pieData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                              </Pie>
-                              <Tooltip 
-                                contentStyle={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', borderRadius: '8px' }}
-                                itemStyle={{ color: 'var(--text-primary)' }}
-                              />
-                              <Legend />
-                            </PieChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-
-                      <div className="dashboard-card">
-                        <h3>Organization Summary</h3>
-                        <div className="stats-container">
-                          <div className="stat-item">
-                            <div className="stat-icon"><FileIcon size={24} /></div>
-                            <div className="stat-details">
-                              <p>Total Files Organized</p>
-                              <h4>{totalFiles}</h4>
-                            </div>
-                          </div>
-                          <div className="stat-item">
-                            <div className="stat-icon"><HardDrive size={24} /></div>
-                            <div className="stat-details">
-                              <p>Total Storage Managed</p>
-                              <h4>{formatSize(totalSize)}</h4>
-                            </div>
-                          </div>
-                        </div>
+            {searchQuery && processedFiles.length === 0 ? (
+              <div className="empty-state" style={{ padding: '2rem 0', minHeight: 'auto', marginBottom: '2rem' }}>
+                <p>No matching files found.</p>
+                <span>Try a different search term.</span>
+              </div>
+            ) : (
+              <>
+                {groupedFiles['Duplicates']?.length > 0 && (
+                  <div className="duplicates-alert-banner" style={{
+                    background: 'rgba(245, 158, 11, 0.1)',
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                    padding: '1.25rem',
+                    borderRadius: '16px',
+                    marginBottom: '1.5rem',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    flexWrap: 'wrap',
+                    animation: 'slideIn 0.3s ease-out'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: '250px' }}>
+                      <span style={{ fontSize: '1.5rem' }}>⚠️</span>
+                      <div>
+                        <h4 style={{ margin: 0, color: '#fbbf24', fontWeight: '600' }}>Duplicate Files Detected</h4>
+                        <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                          Found {groupedFiles['Duplicates'].length} duplicate files. You can review them or clean them up to free space.
+                        </p>
                       </div>
                     </div>
-                  </>
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                      <button 
+                        onClick={() => setCurrentView('Duplicates')}
+                        style={{ 
+                          padding: '0.6rem 1.2rem', 
+                          background: 'rgba(245, 158, 11, 0.15)', 
+                          color: '#fbbf24', 
+                          border: '1px solid rgba(245, 158, 11, 0.3)', 
+                          borderRadius: '8px', 
+                          fontWeight: '600', 
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        View Duplicates
+                      </button>
+                      <button 
+                        onClick={async () => {
+                          if (window.confirm(`Are you sure you want to permanently delete all ${groupedFiles['Duplicates'].length} duplicate files?`)) {
+                            setLoading(true);
+                            try {
+                              for (const file of groupedFiles['Duplicates']) {
+                                  await api.delete(`/files/${file._id}`);
+                              }
+                              await fetchFiles();
+                              alert('All duplicates deleted successfully!');
+                            } catch (error) {
+                              console.error(error);
+                              alert('Failed to delete some duplicate files');
+                            } finally {
+                              setLoading(false);
+                            }
+                          }
+                        }}
+                        style={{ 
+                          padding: '0.6rem 1.2rem', 
+                          background: 'var(--danger)', 
+                          color: 'white', 
+                          border: 'none', 
+                          borderRadius: '8px', 
+                          fontWeight: '600', 
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        Clean All Duplicates
+                      </button>
+                    </div>
+                  </div>
                 )}
 
-                <div className="folder-grid">
-                  {Object.keys(groupedFiles).map(catName => (
-                    <div key={catName} className="folder-card" onClick={() => setCurrentView(catName)}>
-                      <Folder size={48} className="folder-card-icon" />
-                      <h3>{catName}</h3>
-                      <p>{groupedFiles[catName].length} files</p>
+                <div className="dashboard-container">
+                  <div className="dashboard-card" style={{ minWidth: 0 }}>
+                    <h3>Category Distribution</h3>
+                    <div style={{ width: '100%', height: 200, position: 'relative' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={pieData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                            isAnimationActive={true}
+                          >
+                            {pieData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            contentStyle={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', borderRadius: '8px' }}
+                            itemStyle={{ color: 'var(--text-primary)' }}
+                          />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
                     </div>
-                  ))}
+                  </div>
+
+                  <div className="dashboard-card">
+                    <h3>Organization Summary</h3>
+                    <div className="stats-container">
+                      <div className="stat-item">
+                        <div className="stat-icon"><FileIcon size={24} /></div>
+                        <div className="stat-details">
+                          <p>Total Files Organized</p>
+                          <h4>{totalFiles}</h4>
+                        </div>
+                      </div>
+                      <div className="stat-item">
+                        <div className="stat-icon"><HardDrive size={24} /></div>
+                        <div className="stat-details">
+                          <p>Total Storage Managed</p>
+                          <h4>{formatSize(totalSize)}</h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </>
             )}
+
+            <div className="folder-grid">
+              {Object.keys(groupedFiles).map(catName => (
+                <div key={catName} className="folder-card" onClick={() => setCurrentView(catName)}>
+                  <Folder size={48} className="folder-card-icon" />
+                  <h3>{catName}</h3>
+                  <p>{groupedFiles[catName].length} files</p>
+                </div>
+              ))}
+            </div>
           </>
         ) : (
           <div className="category-view">

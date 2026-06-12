@@ -1,5 +1,39 @@
 {
-  "files": [],
+  "files": [
+    {
+      "_id": "60cf7c92-4b49-49d9-b49d-45c37d2ca733",
+      "filename": "doc1.txt",
+      "originalName": "doc1.txt",
+      "category": "Documents",
+      "filePath": "C:\\Users\\jayaa\\OneDrive\\Pictures\\Projects\\File Organizer\\backend\\test_duplicate_run\\Documents\\doc1.txt",
+      "size": 23,
+      "uploadDate": "2026-06-12T09:02:02.982Z",
+      "hash": "b228fe3df6df84d04c77feee50105e33a89fcd3fd911c8405f5ecdab5d030271",
+      "duplicateOf": null
+    },
+    {
+      "_id": "2e6c99df-357b-4585-97be-45e05fcf6845",
+      "filename": "doc1_copy.txt",
+      "originalName": "doc1_copy.txt",
+      "category": "Duplicates",
+      "filePath": "C:\\Users\\jayaa\\OneDrive\\Pictures\\Projects\\File Organizer\\backend\\test_duplicate_run\\Duplicates\\doc1_copy.txt",
+      "size": 23,
+      "uploadDate": "2026-06-12T09:02:02.986Z",
+      "hash": "b228fe3df6df84d04c77feee50105e33a89fcd3fd911c8405f5ecdab5d030271",
+      "duplicateOf": "C:\\Users\\jayaa\\OneDrive\\Pictures\\Projects\\File Organizer\\backend\\test_duplicate_run\\Documents\\doc1.txt"
+    },
+    {
+      "_id": "9933617b-cae9-4577-a4e2-def3d4664aef",
+      "filename": "unique.txt",
+      "originalName": "unique.txt",
+      "category": "Documents",
+      "filePath": "C:\\Users\\jayaa\\OneDrive\\Pictures\\Projects\\File Organizer\\backend\\test_duplicate_run\\Documents\\unique.txt",
+      "size": 29,
+      "uploadDate": "2026-06-12T09:02:02.990Z",
+      "hash": "a4501be7950abb45080e050f4c46d40dfa68cf2cb0c349e1cdc750b34e6e283a",
+      "duplicateOf": null
+    }
+  ],
   "categories": [
     {
       "_id": "86232455-338f-48ed-afcf-2e7d61f05ba0",
@@ -70,6 +104,18 @@
       "_id": "3e324fba-3c56-4a40-8a0e-4adc1dd40d77",
       "folderPath": "C:\\Users\\jayaa\\OneDrive\\Pictures\\Screenshots",
       "lastOrganizedAt": 1778322002701
+    },
+    {
+      "_id": "7d7b2c08-4986-4b1d-a41f-c704e6d1042b",
+      "folderPath": "C:\\Users\\jayaa\\OneDrive\\Pictures\\Dakshith",
+      "lastOrganizedAt": 1781254454728,
+      "isAutoOrganizing": false
+    },
+    {
+      "_id": "6d58033d-e1fe-4167-bbe5-bce8bb572246",
+      "folderPath": "C:\\Users\\jayaa\\OneDrive\\Documents",
+      "lastOrganizedAt": 1781254872562,
+      "isAutoOrganizing": false
     }
   ]
 }

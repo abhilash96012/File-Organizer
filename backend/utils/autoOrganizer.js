@@ -13,9 +13,6 @@ class AutoOrganizer {
 
     console.log(`Starting auto-organizer for: ${folderPath}`);
     
-    // Fetch categories once to keep them in memory for the watcher
-    const categoriesDb = await Category.find();
-
     const watcher = chokidar.watch(folderPath, {
       ignored: /(^|[\/\\])\../, // ignore dotfiles
       persistent: true,
@@ -30,7 +27,8 @@ class AutoOrganizer {
       // Wait a tiny bit to ensure file is fully written/closed
       setTimeout(async () => {
         try {
-          await organizeSingleFile(folderPath, filename, categoriesDb);
+          const freshCategories = await Category.find();
+          await organizeSingleFile(folderPath, filename, freshCategories);
           console.log(`Auto-organized: ${filename}`);
         } catch (err) {
           console.error(`Error auto-organizing ${filename}:`, err.message);

@@ -44,10 +44,11 @@ router.post('/organize-local', async (req, res) => {
       categoriesDb = await Category.find();
     }
     
+    const seenHashes = new Map();
     // Process and organize loose files in the folder
     for (const filename of files) {
       try {
-        const result = await organizeSingleFile(targetPath, filename, categoriesDb);
+        const result = await organizeSingleFile(targetPath, filename, categoriesDb, seenHashes);
         if (result) {
           organizedFiles.push(result);
         }

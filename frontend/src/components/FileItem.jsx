@@ -50,10 +50,30 @@ const FileItem = ({ file, onDelete, isSelected, onToggleSelect }) => {
           <span>•</span>
           <span>{new Date(file.uploadDate).toLocaleDateString()}</span>
         </div>
+        {file.category === 'Duplicates' && (
+          <div 
+            className="duplicate-badge" 
+            style={{ 
+              fontSize: '0.8rem', 
+              color: '#fbbf24', 
+              marginTop: '0.3rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.25rem',
+              fontWeight: '500'
+            }} 
+            title={file.duplicateOf ? `Original file path: ${file.duplicateOf}` : "Duplicate content detected"}
+          >
+            <span>⚠️</span> Duplicate{file.duplicateOf ? ` of: ${file.duplicateOf.split(/[\\\\/]/).pop()}` : ""}
+          </div>
+        )}
       </div>
       <button 
         className="delete-btn" 
-        onClick={() => onDelete(file._id)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(file._id);
+        }}
         title="Delete file"
       >
         <Trash2 size={18} />

@@ -4,6 +4,7 @@ const { spawn } = require('child_process');
 
 let mainWindow;
 let backendProcess;
+let isQuitting = false;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -34,23 +35,37 @@ function createWindow() {
 }
 
 function startBackend() {
-  // Start the Express server
-  backendProcess = spawn('node', [path.join(__dirname, 'backend', 'server.js')], {
-    shell: true,
+  // Start the Spring Boot server
+  backendProcess = spawn('java', ['-jar', path.join(__dirname, 'backend-java.jar')], {
     stdio: 'inherit'
   });
 
   backendProcess.on('error', (err) => {
     console.error('Failed to start backend:', err);
   });
+
+  backendProcess.on('exit', (code, signal) => {
+    if (!isQuitting) {
+      console.warn(`Backend process exited unexpectedly (code ${code}, signal ${signal}). Restarting backend server...`);
+      setTimeout(() => {
+        if (!isQuitting) {
+          startBackend();
+        }
+      }, 1000);
+    }
+  });
 }
 
 app.on('ready', () => {
-  startBackend();
+  const isDev = process.env.NODE_ENV === 'development';
+  if (!isDev) {
+    startBackend();
+  }
   createWindow();
 });
 
 app.on('window-all-closed', () => {
+  isQuitting = true;
   // Kill the backend process when the app closes
   if (backendProcess) backendProcess.kill();
   

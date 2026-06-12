@@ -22,7 +22,7 @@ function getFileHash(filePath) {
  * @param {Array} categoriesDb - List of category objects from DB.
  * @returns {Promise<Object|null>} - The organized file object or null if skipped.
  */
-async function organizeSingleFile(rootPath, filename, categoriesDb) {
+async function organizeSingleFile(rootPath, filename, categoriesDb, seenHashes = new Map()) {
   const oldPath = path.join(rootPath, filename);
   
   // Skip if it's not a file or it's a directory
@@ -32,10 +32,36 @@ async function organizeSingleFile(rootPath, filename, categoriesDb) {
   if (filename.startsWith('.') || filename === 'Thumbs.db' || filename === 'desktop.ini') return null;
 
   const stats = fs.statSync(oldPath);
-  let category = categorizeFile(filename, categoriesDb);
   
-  // Basic duplicate check by looking at existing organized folders
-  // In a real app, we'd maintain a global hash map, but for now we simplify.
+  // Calculate SHA-256 hash
+  let hash = '';
+  try {
+    hash = await getFileHash(oldPath);
+  } catch (err) {
+    console.error(`Error hashing file ${filename}:`, err.message);
+  }
+
+  let category = '';
+  let duplicateOf = null;
+
+  if (hash) {
+    // Check if duplicate in the current batch
+    if (seenHashes.has(hash)) {
+      category = 'Duplicates';
+      duplicateOf = seenHashes.get(hash);
+    } else {
+      // Check if duplicate in the database
+      const existingFiles = await File.find({ hash });
+      if (existingFiles.length > 0) {
+        category = 'Duplicates';
+        duplicateOf = existingFiles[0].filePath;
+      } else {
+        category = categorizeFile(filename, categoriesDb);
+      }
+    }
+  } else {
+    category = categorizeFile(filename, categoriesDb);
+  }
   
   const targetDir = path.join(rootPath, category);
   if (!fs.existsSync(targetDir)) {
@@ -57,13 +83,20 @@ async function organizeSingleFile(rootPath, filename, categoriesDb) {
   // Move the file
   fs.renameSync(oldPath, finalPath);
 
+  // If it was unique, cache its hash in the current batch
+  if (category !== 'Duplicates' && hash) {
+    seenHashes.set(hash, finalPath);
+  }
+
   const newFileData = new File({
     filename: finalFilename,
     originalName: filename,
     category: category,
     filePath: finalPath,
     size: stats.size,
-    uploadDate: new Date()
+    uploadDate: new Date(),
+    hash: hash,
+    duplicateOf: duplicateOf
   });
 
   await newFileData.save();

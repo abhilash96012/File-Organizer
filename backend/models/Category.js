@@ -15,7 +15,12 @@ class Category {
       err.code = 11000;
       throw err;
     }
-    db.categories.push(this);
+    const index = db.categories.findIndex(c => c._id === this._id);
+    if (index !== -1) {
+      db.categories[index] = this;
+    } else {
+      db.categories.push(this);
+    }
     writeDB(db);
     return this;
   }

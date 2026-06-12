@@ -3,3 +3,8 @@ dist
 build
 *.exe
 .env
+backend-java/target
+backend-java/db
+backend-java.jar
+backend/db
+db/

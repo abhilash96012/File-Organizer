@@ -4,13 +4,14 @@
   "description": "Local File Organizer Desktop App",
   "main": "main.js",
   "scripts": {
-    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\" \"npm run start:electron\"",
-    "dev": "npm start",
-    "start:backend": "cd backend && node server.js",
-    "start:frontend": "cd frontend && npm run dev",
+    "start": "concurrently \"npm.cmd run start:backend\" \"npm.cmd run start:frontend\" \"npm.cmd run start:electron\"",
+    "dev": "npm.cmd start",
+    "start:backend": "cd backend-java && mvn spring-boot:run",
+    "start:frontend": "cd frontend && npm.cmd run dev",
     "start:electron": "wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .",
-    "build": "npm run build:frontend && npm run build:electron",
-    "build:frontend": "cd frontend && npm run build",
+    "build": "npm.cmd run build:backend && npm.cmd run build:frontend && npm.cmd run build:electron",
+    "build:backend": "cd backend-java && mvn clean package -DskipTests && copy target\\backend-java-0.0.1-SNAPSHOT.jar ..\\backend-java.jar",
+    "build:frontend": "cd frontend && npm.cmd run build",
     "build:electron": "electron-builder",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -29,7 +30,7 @@
     },
     "files": [
       "main.js",
-      "backend/**/*",
+      "backend-java.jar",
       "frontend/dist/**/*",
       "package.json"
     ],

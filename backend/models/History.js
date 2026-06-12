@@ -19,7 +19,7 @@ class History {
 
   static async findByIdAndDelete(id) {
     const db = readDB();
-    db.history = db.history.filter(h => h._id === id);
+    db.history = db.history.filter(h => h._id !== id);
     writeDB(db);
   }
 

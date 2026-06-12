@@ -9,11 +9,18 @@ class File {
     this.filePath = data.filePath;
     this.size = data.size;
     this.uploadDate = data.uploadDate || new Date();
+    this.hash = data.hash || '';
+    this.duplicateOf = data.duplicateOf || null;
   }
 
   async save() {
     const db = readDB();
-    db.files.push(this);
+    const index = db.files.findIndex(f => f._id === this._id);
+    if (index !== -1) {
+      db.files[index] = this;
+    } else {
+      db.files.push(this);
+    }
     writeDB(db);
     return this;
   }
@@ -32,9 +39,9 @@ class File {
     } else {
       db.files = db.files.filter(f => {
         for (const key in query) {
-          if (f[key] !== query[key]) return false;
+          if (f[key] !== query[key]) return true;
         }
-        return true;
+        return false;
       });
     }
     writeDB(db);
