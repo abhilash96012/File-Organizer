@@ -375,6 +375,23 @@ public class FileOrganizerService {
         return renamed;
     }
 
+    @Transactional
+    public List<FileRecord> getAllFilesSynced() {
+        List<FileRecord> files = fileRecordRepository.findAllByOrderByUploadDateDesc();
+        boolean changed = false;
+        for (FileRecord file : files) {
+            Path filePath = Paths.get(file.getFilePath());
+            if (!Files.exists(filePath)) {
+                fileRecordRepository.delete(file);
+                changed = true;
+            }
+        }
+        if (changed) {
+            return fileRecordRepository.findAllByOrderByUploadDateDesc();
+        }
+        return files;
+    }
+
     public void seedDefaultCategories() {
         List<Category> defaults = Arrays.asList(
                 new Category("Images", Arrays.asList(".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"), true),

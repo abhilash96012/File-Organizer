@@ -42,7 +42,7 @@ public class FileController {
     // GET /files -> get all organized files
     @GetMapping
     public ResponseEntity<List<FileRecord>> getFiles() {
-        List<FileRecord> files = fileRecordRepository.findAllByOrderByUploadDateDesc();
+        List<FileRecord> files = fileOrganizerService.getAllFilesSynced();
         return ResponseEntity.ok(files);
     }
 
