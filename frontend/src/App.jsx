@@ -69,7 +69,7 @@ function App() {
     // Poll for new files in the background to reflect auto-organizer updates
     const intervalId = setInterval(() => {
       fetchFiles(false);
-    }, 2000);
+    }, 500);
 
     return () => clearInterval(intervalId);
   }, [fetchFiles, fetchCategories]);
