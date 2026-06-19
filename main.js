@@ -35,9 +35,20 @@ function createWindow() {
 }
 
 function startBackend() {
+  const isPackaged = app.isPackaged;
+  const jarPath = isPackaged 
+    ? path.join(process.resourcesPath, 'backend-java.jar') 
+    : path.join(__dirname, 'backend-java.jar');
+
+  const dbPath = path.join(app.getPath('userData'), 'db', 'fileorganizer').replace(/\\/g, '/');
+
   // Start the Spring Boot server
-  backendProcess = spawn('java', ['-jar', path.join(__dirname, 'backend-java.jar')], {
-    stdio: 'inherit'
+  backendProcess = spawn('java', [
+    '-jar', jarPath,
+    `--spring.datasource.url=jdbc:h2:file:${dbPath};DB_CLOSE_DELAY=-1`
+  ], {
+    stdio: 'pipe',
+    windowsHide: true
   });
 
   backendProcess.on('error', (err) => {

@@ -30,13 +30,18 @@
     },
     "files": [
       "main.js",
-      "backend-java.jar",
       "frontend/dist/**/*",
       "package.json"
     ],
+    "extraResources": [
+      "backend-java.jar"
+    ],
     "win": {
       "target": "portable",
-      "icon": "build/icon.png"
+      "icon": "build/icon.png",
+      "signtoolOptions": {
+        "sign": null
+      }
     }
   }
 }

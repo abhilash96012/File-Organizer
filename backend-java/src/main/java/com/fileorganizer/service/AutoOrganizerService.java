@@ -112,6 +112,7 @@ public class AutoOrganizerService {
                                     Thread.sleep(500);
                                     List<Category> categories = categoryRepository.findAll();
                                     fileOrganizerService.organizeSingleFile(folderPath, filename, categories, new HashMap<>());
+                                    fileOrganizerService.refreshWindowsExplorer();
                                     System.out.println("Auto-organized file: " + filename);
                                 } catch (InterruptedException e) {
                                     Thread.currentThread().interrupt();

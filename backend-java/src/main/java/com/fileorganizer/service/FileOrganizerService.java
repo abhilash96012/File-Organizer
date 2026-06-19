@@ -127,7 +127,9 @@ public class FileOrganizerService {
         String finalFilename = filename;
         Path finalPath = newPath;
 
-        if (Files.exists(newPath)) {
+        boolean isSamePath = oldPath.toAbsolutePath().normalize().equals(newPath.toAbsolutePath().normalize());
+
+        if (Files.exists(newPath) && !isSamePath) {
             int dotIndex = filename.lastIndexOf('.');
             String base = dotIndex == -1 ? filename : filename.substring(0, dotIndex);
             String ext = dotIndex == -1 ? "" : filename.substring(dotIndex);
@@ -135,7 +137,11 @@ public class FileOrganizerService {
             finalPath = targetDir.resolve(finalFilename);
         }
 
-        Files.move(oldPath, finalPath, StandardCopyOption.REPLACE_EXISTING);
+        boolean isFinalPathSame = oldPath.toAbsolutePath().normalize().equals(finalPath.toAbsolutePath().normalize());
+
+        if (!isFinalPathSame) {
+            Files.move(oldPath, finalPath, StandardCopyOption.REPLACE_EXISTING);
+        }
 
         if (!"Duplicates".equals(category) && !hash.isEmpty()) {
             seenHashes.put(hash, finalPath.toString());
@@ -200,21 +206,32 @@ public class FileOrganizerService {
         categoryPaths.add(path.resolve("Others"));
         categoryPaths.add(path.resolve("Duplicates"));
 
+        // Ensure all category directories exist physically on disk
+        for (Category cat : categories) {
+            Path catDir = path.resolve(cat.getName());
+            if (!Files.exists(catDir)) {
+                Files.createDirectories(catDir);
+            }
+        }
+        Path othersDir = path.resolve("Others");
+        if (!Files.exists(othersDir)) {
+            Files.createDirectories(othersDir);
+        }
+        Path duplicatesDir = path.resolve("Duplicates");
+        if (!Files.exists(duplicatesDir)) {
+            Files.createDirectories(duplicatesDir);
+        }
+
+        Path duplicatesPath = path.resolve("Duplicates");
         List<Path> allFiles = new ArrayList<>();
         try (var stream = Files.walk(path)) {
             stream.forEach(p -> {
                 if (Files.isRegularFile(p)) {
-                    // Check if this file is inside any of the category directories
-                    boolean inCategoryDir = false;
-                    for (Path catPath : categoryPaths) {
-                        if (p.startsWith(catPath)) {
-                            inCategoryDir = true;
-                            break;
-                        }
+                    // Skip files that are inside the Duplicates folder
+                    if (p.startsWith(duplicatesPath)) {
+                        return;
                     }
-                    if (!inCategoryDir) {
-                        allFiles.add(p);
-                    }
+                    allFiles.add(p);
                 }
             });
         }
@@ -248,6 +265,8 @@ public class FileOrganizerService {
                 .orElse(new HistoryRecord(targetPath, new Date(), false));
         history.setLastOrganizedAt(new Date());
         historyRepository.save(history);
+
+        refreshWindowsExplorer();
 
         return organized;
     }
@@ -291,6 +310,7 @@ public class FileOrganizerService {
                 }
             }
         }
+        refreshWindowsExplorer();
     }
 
     @Transactional
@@ -320,6 +340,7 @@ public class FileOrganizerService {
         }
 
         fileRecordRepository.deleteByCategory(categoryName);
+        refreshWindowsExplorer();
     }
 
     @Transactional
@@ -349,6 +370,7 @@ public class FileOrganizerService {
             file.setFilePath(newPath.toString());
             renamed.add(fileRecordRepository.save(file));
         }
+        refreshWindowsExplorer();
 
         return renamed;
     }
@@ -361,5 +383,24 @@ public class FileOrganizerService {
                 new Category("Duplicates", new ArrayList<>(), true)
         );
         categoryRepository.saveAll(defaults);
+    }
+
+    public void refreshWindowsExplorer() {
+        try {
+            String os = System.getProperty("os.name").toLowerCase();
+            if (os.contains("win")) {
+                String script = "$shell = New-Object -ComObject Shell.Application; " +
+                               "$windows = $shell.Windows(); " +
+                               "for ($i = 0; $i -lt $windows.Count; $i++) { " +
+                               "    $window = $windows.Item($i); " +
+                               "    if ($window -ne $null -and ($window.Name -eq 'Windows Explorer' -or $window.Name -eq 'File Explorer')) { " +
+                               "        $window.Refresh(); " +
+                               "    } " +
+                               "}";
+                new ProcessBuilder("powershell.exe", "-Command", script).start();
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to refresh Windows Explorer: " + e.getMessage());
+        }
     }
 }

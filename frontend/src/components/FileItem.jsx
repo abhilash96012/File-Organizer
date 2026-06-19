@@ -2,9 +2,20 @@ import { FileText, Image, Video, File, Trash2 } from 'lucide-react';
 import { API_BASE_URL } from '../api';
 
 const FileItem = ({ file, onDelete, isSelected, onToggleSelect }) => {
+  const getFileType = () => {
+    const name = file.originalName || '';
+    const ext = name.slice(name.lastIndexOf('.')).toLowerCase();
+    if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'].includes(ext)) return 'Images';
+    if (['.mp4', '.avi', '.mov', '.wmv', '.mkv'].includes(ext)) return 'Videos';
+    if (['.pdf', '.doc', '.docx', '.txt', '.xlsx', '.xls', '.csv', '.ppt', '.pptx'].includes(ext)) return 'Documents';
+    return 'Others';
+  };
+
+  const fileType = getFileType();
+
   // Helper to determine which icon to show
   const getIcon = () => {
-    switch (file.category) {
+    switch (fileType) {
       case 'Images': return <Image size={24} className="icon-image" />;
       case 'Documents': return <FileText size={24} className="icon-doc" />;
       case 'Videos': return <Video size={24} className="icon-video" />;
@@ -32,7 +43,7 @@ const FileItem = ({ file, onDelete, isSelected, onToggleSelect }) => {
         />
       </div>
       <div className="file-icon-wrapper">
-        {file.category === 'Images' ? (
+        {fileType === 'Images' ? (
           <img 
             src={`${API_BASE_URL}/files/preview?path=${encodeURIComponent(file.filePath)}`} 
             alt={file.originalName} 

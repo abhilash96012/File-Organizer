@@ -1,14 +1,36 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import api from './api';
-import { FolderOpen, Folder, HardDrive, File as FileIcon, Search, Settings, Trash2 } from 'lucide-react';
+import { FolderOpen, Folder, HardDrive, File as FileIcon, Search, Settings, Trash2, Image, Video, FileText, AlertTriangle, RotateCw } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import UploadForm from './components/UploadForm';
 import FileCategory from './components/FileCategory';
 import './index.css';
 
+const DEFAULT_CATEGORIES = [
+  { _id: 'default_images', name: 'Images', extensions: ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'], isDefault: true },
+  { _id: 'default_documents', name: 'Documents', extensions: ['.pdf', '.doc', '.docx', '.txt', '.xlsx', '.xls', '.csv', '.ppt', '.pptx'], isDefault: true },
+  { _id: 'default_videos', name: 'Videos', extensions: ['.mp4', '.avi', '.mov', '.wmv', '.mkv'], isDefault: true },
+  { _id: 'default_duplicates', name: 'Duplicates', extensions: [], isDefault: true }
+];
+
+const getFolderIcon = (catName) => {
+  switch (catName) {
+    case 'Images':
+      return <Image size={48} className="folder-card-icon" style={{ color: '#10b981' }} />;
+    case 'Videos':
+      return <Video size={48} className="folder-card-icon" style={{ color: '#f59e0b' }} />;
+    case 'Documents':
+      return <FileText size={48} className="folder-card-icon" style={{ color: '#3b82f6' }} />;
+    case 'Duplicates':
+      return <AlertTriangle size={48} className="folder-card-icon" style={{ color: '#ef4444' }} />;
+    default:
+      return <Folder size={48} className="folder-card-icon" style={{ color: '#6366f1' }} />;
+  }
+};
+
 function App() {
   const [files, setFiles] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState('home');
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,15 +41,15 @@ function App() {
   const [newCatName, setNewCatName] = useState('');
   const [newCatExts, setNewCatExts] = useState('');
 
-  const fetchFiles = useCallback(async () => {
+  const fetchFiles = useCallback(async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const response = await api.get('/files');
       setFiles(response.data);
     } catch (error) {
       console.error('Error fetching files:', error);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   }, []);
 
@@ -41,8 +63,15 @@ function App() {
   }, []);
 
   useEffect(() => {
-    fetchFiles();
+    fetchFiles(true);
     fetchCategories();
+
+    // Poll for new files in the background to reflect auto-organizer updates
+    const intervalId = setInterval(() => {
+      fetchFiles(false);
+    }, 2000);
+
+    return () => clearInterval(intervalId);
   }, [fetchFiles, fetchCategories]);
 
   // Retry fetching if categories are empty (backend might be starting)
@@ -214,25 +243,50 @@ function App() {
             <FolderOpen size={36} />
             <h1>File Organizer</h1>
           </div>
-          <button 
-            onClick={() => setCurrentView(currentView === 'settings' ? 'home' : 'settings')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.6rem 1.2rem',
-              background: currentView === 'settings' ? 'var(--primary)' : 'var(--surface)',
-              color: 'white',
-              border: '1px solid var(--border)',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-          >
-            <Settings size={18} />
-            {currentView === 'settings' ? 'Close Settings' : 'Settings'}
-          </button>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <button 
+              onClick={() => {
+                fetchFiles(true);
+                fetchCategories();
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.6rem 1.2rem',
+                background: 'var(--surface)',
+                color: 'white',
+                border: '1px solid var(--border)',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontWeight: '600',
+                transition: 'all 0.2s'
+              }}
+              title="Refresh files and categories"
+            >
+              <RotateCw size={18} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+              Refresh
+            </button>
+            <button 
+              onClick={() => setCurrentView(currentView === 'settings' ? 'home' : 'settings')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.6rem 1.2rem',
+                background: currentView === 'settings' ? 'var(--primary)' : 'var(--surface)',
+                color: 'white',
+                border: '1px solid var(--border)',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontWeight: '600',
+                transition: 'all 0.2s'
+              }}
+            >
+              <Settings size={18} />
+              {currentView === 'settings' ? 'Close Settings' : 'Settings'}
+            </button>
+          </div>
         </div>
         <p className="subtitle" style={{ textAlign: 'left' }}>Locally organize any folder on your computer.</p>
       </header>
@@ -478,7 +532,7 @@ function App() {
             <div className="folder-grid">
               {Object.keys(groupedFiles).map(catName => (
                 <div key={catName} className="folder-card" onClick={() => setCurrentView(catName)}>
-                  <Folder size={48} className="folder-card-icon" />
+                  {getFolderIcon(catName)}
                   <h3>{catName}</h3>
                   <p>{groupedFiles[catName].length} files</p>
                 </div>
