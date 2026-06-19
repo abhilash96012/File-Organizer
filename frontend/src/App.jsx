@@ -337,41 +337,10 @@ function App() {
               </button>
             </form>
           </div>
-        ) : currentView === 'home' ? (
+        ) : (
           <>
-            <UploadForm onFileUpload={handleFileUpload} fetchFiles={fetchFiles} />
-            
-            {selectedFileIds.length > 0 && (
-              <div className="bulk-actions-toolbar" style={{ 
-                background: 'var(--primary)', 
-                padding: '1rem', 
-                borderRadius: '12px', 
-                marginBottom: '1.5rem', 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center',
-                animation: 'slideIn 0.3s ease-out'
-              }}>
-                <span style={{ fontWeight: '600', color: 'white' }}>{selectedFileIds.length} files selected</span>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                  <button 
-                    onClick={handleBulkRename}
-                    style={{ padding: '0.5rem 1rem', background: 'white', color: 'var(--primary)', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
-                  >
-                    Bulk Rename
-                  </button>
-                  <button 
-                    onClick={() => setSelectedFileIds([])}
-                    style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.2)', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
-                  >
-                    Clear Selection
-                  </button>
-                </div>
-              </div>
-            )}
-
             {files.length > 0 && (
-              <div className="controls-container">
+              <div className="controls-container" style={{ marginBottom: '1.5rem' }}>
                 <div className="search-wrapper">
                   <Search size={20} className="search-icon" />
                   <input 
@@ -395,181 +364,216 @@ function App() {
               </div>
             )}
 
-            {searchQuery && processedFiles.length === 0 ? (
-              <div className="empty-state" style={{ padding: '2rem 0', minHeight: 'auto', marginBottom: '2rem' }}>
-                <p>No matching files found.</p>
-                <span>Try a different search term.</span>
-              </div>
-            ) : (
+            {currentView === 'home' ? (
               <>
-                {groupedFiles['Duplicates']?.length > 0 && (
-                  <div className="duplicates-alert-banner" style={{
-                    background: 'rgba(245, 158, 11, 0.1)',
-                    border: '1px solid rgba(245, 158, 11, 0.3)',
-                    padding: '1.25rem',
-                    borderRadius: '16px',
-                    marginBottom: '1.5rem',
-                    display: 'flex',
-                    justifyContent: 'space-between',
+                <UploadForm onFileUpload={handleFileUpload} fetchFiles={fetchFiles} />
+                
+                {selectedFileIds.length > 0 && (
+                  <div className="bulk-actions-toolbar" style={{ 
+                    background: 'var(--primary)', 
+                    padding: '1rem', 
+                    borderRadius: '12px', 
+                    marginBottom: '1.5rem', 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
                     alignItems: 'center',
-                    gap: '1rem',
-                    flexWrap: 'wrap',
                     animation: 'slideIn 0.3s ease-out'
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: '250px' }}>
-                      <span style={{ fontSize: '1.5rem' }}>⚠️</span>
-                      <div>
-                        <h4 style={{ margin: 0, color: '#fbbf24', fontWeight: '600' }}>Duplicate Files Detected</h4>
-                        <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                          Found {groupedFiles['Duplicates'].length} duplicate files. You can review them or clean them up to free space.
-                        </p>
-                      </div>
-                    </div>
+                    <span style={{ fontWeight: '600', color: 'white' }}>{selectedFileIds.length} files selected</span>
                     <div style={{ display: 'flex', gap: '0.75rem' }}>
                       <button 
-                        onClick={() => setCurrentView('Duplicates')}
-                        style={{ 
-                          padding: '0.6rem 1.2rem', 
-                          background: 'rgba(245, 158, 11, 0.15)', 
-                          color: '#fbbf24', 
-                          border: '1px solid rgba(245, 158, 11, 0.3)', 
-                          borderRadius: '8px', 
-                          fontWeight: '600', 
-                          cursor: 'pointer',
-                          transition: 'all 0.2s'
-                        }}
+                        onClick={handleBulkRename}
+                        style={{ padding: '0.5rem 1rem', background: 'white', color: 'var(--primary)', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
                       >
-                        View Duplicates
+                        Bulk Rename
                       </button>
                       <button 
-                        onClick={async () => {
-                          if (window.confirm(`Are you sure you want to permanently delete all ${groupedFiles['Duplicates'].length} duplicate files?`)) {
-                            setLoading(true);
-                            try {
-                              for (const file of groupedFiles['Duplicates']) {
-                                  await api.delete(`/files/${file._id}`);
-                              }
-                              await fetchFiles();
-                              alert('All duplicates deleted successfully!');
-                            } catch (error) {
-                              console.error(error);
-                              alert('Failed to delete some duplicate files');
-                            } finally {
-                              setLoading(false);
-                            }
-                          }
-                        }}
-                        style={{ 
-                          padding: '0.6rem 1.2rem', 
-                          background: 'var(--danger)', 
-                          color: 'white', 
-                          border: 'none', 
-                          borderRadius: '8px', 
-                          fontWeight: '600', 
-                          cursor: 'pointer',
-                          transition: 'all 0.2s'
-                        }}
+                        onClick={() => setSelectedFileIds([])}
+                        style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.2)', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
                       >
-                        Clean All Duplicates
+                        Clear Selection
                       </button>
                     </div>
                   </div>
                 )}
 
-                <div className="dashboard-container">
-                  <div className="dashboard-card" style={{ minWidth: 0 }}>
-                    <h3>Category Distribution</h3>
-                    <div style={{ width: '100%', height: 200, position: 'relative' }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={pieData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={60}
-                            outerRadius={80}
-                            paddingAngle={5}
-                            dataKey="value"
-                            isAnimationActive={true}
+                {searchQuery && processedFiles.length === 0 ? (
+                  <div className="empty-state" style={{ padding: '2rem 0', minHeight: 'auto', marginBottom: '2rem' }}>
+                    <p>No matching files found.</p>
+                    <span>Try a different search term.</span>
+                  </div>
+                ) : (
+                  <>
+                    {groupedFiles['Duplicates']?.length > 0 && (
+                      <div className="duplicates-alert-banner" style={{
+                        background: 'rgba(245, 158, 11, 0.1)',
+                        border: '1px solid rgba(245, 158, 11, 0.3)',
+                        padding: '1.25rem',
+                        borderRadius: '16px',
+                        marginBottom: '1.5rem',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '1rem',
+                        flexWrap: 'wrap',
+                        animation: 'slideIn 0.3s ease-out'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: '250px' }}>
+                          <span style={{ fontSize: '1.5rem' }}>⚠️</span>
+                          <div>
+                            <h4 style={{ margin: 0, color: '#fbbf24', fontWeight: '600' }}>Duplicate Files Detected</h4>
+                            <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                              Found {groupedFiles['Duplicates'].length} duplicate files. You can review them or clean them up to free space.
+                            </p>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                          <button 
+                            onClick={() => setCurrentView('Duplicates')}
+                            style={{ 
+                              padding: '0.6rem 1.2rem', 
+                              background: 'rgba(245, 158, 11, 0.15)', 
+                              color: '#fbbf24', 
+                              border: '1px solid rgba(245, 158, 11, 0.3)', 
+                              borderRadius: '8px', 
+                              fontWeight: '600', 
+                              cursor: 'pointer',
+                              transition: 'all 0.2s'
+                            }}
                           >
-                            {pieData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip 
-                            contentStyle={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', borderRadius: '8px' }}
-                            itemStyle={{ color: 'var(--text-primary)' }}
-                          />
-                          <Legend />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
+                            View Duplicates
+                          </button>
+                          <button 
+                            onClick={async () => {
+                              if (window.confirm(`Are you sure you want to permanently delete all ${groupedFiles['Duplicates'].length} duplicate files?`)) {
+                                setLoading(true);
+                                try {
+                                  for (const file of groupedFiles['Duplicates']) {
+                                      await api.delete(`/files/${file._id}`);
+                                  }
+                                  await fetchFiles();
+                                  alert('All duplicates deleted successfully!');
+                                } catch (error) {
+                                  console.error(error);
+                                  alert('Failed to delete some duplicate files');
+                                } finally {
+                                  setLoading(false);
+                                }
+                              }
+                            }}
+                            style={{ 
+                              padding: '0.6rem 1.2rem', 
+                              background: 'var(--danger)', 
+                              color: 'white', 
+                              border: 'none', 
+                              borderRadius: '8px', 
+                              fontWeight: '600', 
+                              cursor: 'pointer',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            Clean All Duplicates
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
-                  <div className="dashboard-card">
-                    <h3>Organization Summary</h3>
-                    <div className="stats-container">
-                      <div className="stat-item">
-                        <div className="stat-icon"><FileIcon size={24} /></div>
-                        <div className="stat-details">
-                          <p>Total Files Organized</p>
-                          <h4>{totalFiles}</h4>
+                    <div className="dashboard-container">
+                      <div className="dashboard-card" style={{ minWidth: 0 }}>
+                        <h3>Category Distribution</h3>
+                        <div style={{ width: '100%', height: 200, position: 'relative' }}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={pieData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={60}
+                                outerRadius={80}
+                                paddingAngle={5}
+                                dataKey="value"
+                                isAnimationActive={true}
+                              >
+                                {pieData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip 
+                                contentStyle={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', borderRadius: '8px' }}
+                                itemStyle={{ color: 'var(--text-primary)' }}
+                              />
+                              <Legend />
+                            </PieChart>
+                          </ResponsiveContainer>
                         </div>
                       </div>
-                      <div className="stat-item">
-                        <div className="stat-icon"><HardDrive size={24} /></div>
-                        <div className="stat-details">
-                          <p>Total Storage Managed</p>
-                          <h4>{formatSize(totalSize)}</h4>
+
+                      <div className="dashboard-card">
+                        <h3>Organization Summary</h3>
+                        <div className="stats-container">
+                          <div className="stat-item">
+                            <div className="stat-icon"><FileIcon size={24} /></div>
+                            <div className="stat-details">
+                              <p>Total Files Organized</p>
+                              <h4>{totalFiles}</h4>
+                            </div>
+                          </div>
+                          <div className="stat-item">
+                            <div className="stat-icon"><HardDrive size={24} /></div>
+                            <div className="stat-details">
+                              <p>Total Storage Managed</p>
+                              <h4>{formatSize(totalSize)}</h4>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </>
+                )}
+
+                <div className="folder-grid">
+                  {Object.keys(groupedFiles).map(catName => (
+                    <div key={catName} className="folder-card" onClick={() => setCurrentView(catName)}>
+                      {getFolderIcon(catName)}
+                      <h3>{catName}</h3>
+                      <p>{groupedFiles[catName].length} files</p>
+                    </div>
+                  ))}
                 </div>
               </>
-            )}
-
-            <div className="folder-grid">
-              {Object.keys(groupedFiles).map(catName => (
-                <div key={catName} className="folder-card" onClick={() => setCurrentView(catName)}>
-                  {getFolderIcon(catName)}
-                  <h3>{catName}</h3>
-                  <p>{groupedFiles[catName].length} files</p>
+            ) : (
+              <div className="category-view">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <button className="back-btn" style={{ marginBottom: 0 }} onClick={() => setCurrentView('home')}>
+                    ← Back to Folders
+                  </button>
+                  {groupedFiles[currentView]?.length > 0 && (
+                    <button 
+                      onClick={() => handleRestoreCategory(currentView)}
+                      style={{ 
+                        padding: '0.5rem 1rem', 
+                        background: 'var(--primary)', 
+                        color: 'white', 
+                        border: 'none', 
+                        borderRadius: '8px', 
+                        cursor: 'pointer',
+                        fontWeight: '600'
+                      }}
+                    >
+                      Un-organize {currentView}
+                    </button>
+                  )}
                 </div>
-              ))}
-            </div>
+                <FileCategory 
+                  categoryName={currentView} 
+                  files={groupedFiles[currentView] || []} 
+                  onDelete={handleFileDelete} 
+                  selectedFileIds={selectedFileIds}
+                  onToggleSelect={handleToggleSelect}
+                />
+              </div>
+            )}
           </>
-        ) : (
-          <div className="category-view">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <button className="back-btn" style={{ marginBottom: 0 }} onClick={() => setCurrentView('home')}>
-                ← Back to Folders
-              </button>
-              {groupedFiles[currentView]?.length > 0 && (
-                <button 
-                  onClick={() => handleRestoreCategory(currentView)}
-                  style={{ 
-                    padding: '0.5rem 1rem', 
-                    background: 'var(--primary)', 
-                    color: 'white', 
-                    border: 'none', 
-                    borderRadius: '8px', 
-                    cursor: 'pointer',
-                    fontWeight: '600'
-                  }}
-                >
-                  Un-organize {currentView}
-                </button>
-              )}
-            </div>
-            <FileCategory 
-              categoryName={currentView} 
-              files={groupedFiles[currentView] || []} 
-              onDelete={handleFileDelete} 
-              selectedFileIds={selectedFileIds}
-              onToggleSelect={handleToggleSelect}
-            />
-          </div>
         )}
       </main>
     </div>
